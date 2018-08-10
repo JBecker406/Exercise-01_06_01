@@ -13,6 +13,7 @@
 var twentyNine = document.createDocumentFragment();
 var thirty = document.createDocumentFragment();
 var thirtyOne = document.createDocumentFragment();
+var formValidity = true;
 
 // function to turn off select list defaults
 function removeSelectDefaults() {
@@ -71,11 +72,51 @@ function autoCheckCustom() {
     }
 }
 
+// function to copy delivery to billing address
+function copyBillingAddress() {
+    var billingInputElements = document.querySelectorAll("#billingAddress input");
+    var deliveryInputElements = document.querySelectorAll("#deliveryAddress input");
+    // if checkbox checked - copy all fields
+    if (document.getElementById("sameAddr").checked) {
+        for (let i = 0; i < billingInputElements.length; i++) {
+            deliveryInputElements[i + 1].value = billingInputElements[i].value;
+        }
+        document.querySelector("#deliveryAddress select").value = document.querySelector("#billingAddress select").value;
+    }
+    // else erase all fields
+    else {
+        for (let i = 0; i < billingInputElements.length; i++) {
+            deliveryInputElements[i + 1].value = "";
+        }
+        document.querySelector("#deliveryAddress select").selectedIndex = -1;
+    }
+}
+
 // functions to run on page load
 function setUpPage() {
     removeSelectDefaults();
     setUpDays();
     createEventListeners();
+}
+
+// function to validate entire form
+function validateForm(evt) {
+    if (evt.preventDefault) {
+        evt.preventDefault();
+    }
+    else {
+        evt.returnValue = false;
+    }
+
+    if (formValidity === true) {
+        document.getElementById("errorText").innerHTML = "";
+        document.getElementById("errorText").style.display = "none";
+        document.getElementsByTagName("form")[0].submit();
+    } else {
+        document.getElementById("errorText").innerHTML = "Please fix the indicated problems and then resubmit your order.";
+        document.getElementById("errorText").style.display = "block";
+        scroll(0,0);
+    }
 }
 
 // function to create our event listeners
@@ -97,6 +138,18 @@ function createEventListeners() {
         messageBox.addEventListener("change", autoCheckCustom, false);
     } else if (messageBox.attachEventListener) {
         messageBox.attachEventListener("onchange", autoCheckCustom, false);
+    }
+    var same = document.getElementById("sameAddr");
+    if (same.addEventListener) {
+        same.addEventListener("change", copyBillingAddress, false);
+    } else if (same.attachEventListener) {
+        same.attachEventListener("onchange", copyBillingAddress, false);
+    }
+    var form = document.getElementsByTagName("form")[0];
+    if (form.addEventListener) {
+        form.addEventListener("submit", validateForm, false);
+    } else if (form.attachEventListener) {
+        form.attachEventListener("onsubmit", validateForm, false);
     }
 }
 
